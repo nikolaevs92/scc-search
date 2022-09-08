@@ -1,1 +1,1 @@
-# stg-search
+# scc-search
