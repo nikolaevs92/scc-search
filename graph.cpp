@@ -25,10 +25,10 @@ void DirectedGraph::AddEdge(size_t from, size_t to){
     Nodes[from].push_back(to);
 }
 
-DirectedGraph* DirectedGraph::GetInverseGraph() const {
+std::unique_ptr<DirectedGraph> DirectedGraph::GetInverseGraph() const {
     /// @brief create inversed graph
-    /// @return dynamic DirectedGraph, should be deleted in the end
-    DirectedGraph* inversed = new DirectedGraph(Nodes.size());
+    /// @return 
+    auto inversed = std::make_unique<DirectedGraph>(Nodes.size());
     for (size_t from = 0; from < Nodes.size(); from++) {
         for (const auto to : Nodes[from]) {
             inversed->AddEdge(to, from);
@@ -83,7 +83,7 @@ void DirectedGraph::DFSStep(DFSVisitor& visitor, size_t startNode, std::vector<b
     for (const auto node : Nodes[startNode]) {
         if (!visited[node]) {
             DFSStep(visitor, node, visited);
-            visitor.ReturnToNode(node);
+            visitor.ReturnToNode(startNode);
         }
     }
     visitor.EndNode(startNode);

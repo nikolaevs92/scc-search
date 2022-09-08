@@ -1,5 +1,7 @@
 #pragma once
+
 #include <vector>
+#include <memory>
 
 
 class DFSVisitor {
@@ -28,7 +30,7 @@ public:
 
     // ToDo: maybe return poiner, but leak...
     void AddEdge(size_t from, size_t to);
-    DirectedGraph* GetInverseGraph() const;
+    std::unique_ptr<DirectedGraph> GetInverseGraph() const;
     void DFS(DFSVisitor& visitor) const;
     void DFS(DFSVisitor& visitor, const std::vector<size_t>& order) const;
     size_t NodesAmount() const;

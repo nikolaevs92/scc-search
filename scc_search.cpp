@@ -26,7 +26,7 @@ public:
 
 class SCGSSecondVisitor: public DFSVisitor {
 public:
-    SCGSSecondVisitor(){}
+    SCGSSecondVisitor() : Components(), currentComponet(){}
     ~SCGSSecondVisitor(){}
     std::set<std::set<size_t>> Components;
     std::set<size_t> currentComponet;
@@ -49,7 +49,7 @@ std::set<std::set<size_t>> SCGSearch(size_t nodesNumber, const std::vector<std::
     /// @param nodesNumber nodes number
     /// @param edges vector of edges as pair of node ind (first->second) /
 
-   DirectedGraph graph(nodesNumber, edges);
+    DirectedGraph graph(nodesNumber, edges);
     SCGSFirstVisitor firstVisitor(graph.NodesAmount());
     graph.DFS(firstVisitor);
 
@@ -58,14 +58,12 @@ std::set<std::set<size_t>> SCGSearch(size_t nodesNumber, const std::vector<std::
         order.push_back(i);
     } 
     std::sort(order.begin(), order.end(), [&firstVisitor](size_t i, size_t j){
-        return firstVisitor.Values[i] < firstVisitor.Values[j];
+        return firstVisitor.Values[i] > firstVisitor.Values[j];
         });
     
-
     SCGSSecondVisitor secondVisitor;
     auto inversedGraph = graph.GetInverseGraph();
     inversedGraph->DFS(secondVisitor, order);
-    delete inversedGraph;
     
     return secondVisitor.Components;
 }
