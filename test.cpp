@@ -40,7 +40,7 @@ bool operator==(std::set<std::set<size_t>>& left, std::set<std::set<size_t>>& ri
         if (!((*leftIt) == (*rightIt))) {
             return false;
             ++leftIt;
-            ++ rightIt;
+            ++rightIt;
         }
     }
 
@@ -48,7 +48,8 @@ bool operator==(std::set<std::set<size_t>>& left, std::set<std::set<size_t>>& ri
 }
 
 bool TestOneSCGSearch(const SCGSearchTestData& testData) {
-    auto realOutput = SCGSearch(testData.InputNodesNumber, testData.InputEdges);
+    std::set<std::set<size_t>> realOutput;
+    SCGSearch(testData.InputNodesNumber, testData.InputEdges, realOutput);
     if (realOutput == testData.CorrectOutput) {
         return true;
     }

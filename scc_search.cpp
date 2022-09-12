@@ -10,37 +10,39 @@ class SCGSFirstVisitor: public DFSVisitor {
 private:
     size_t Counter;
     // TODO: change name?
-    std::vector<size_t> Values;
+    std::vector<size_t>& Values;
 public:
-    SCGSFirstVisitor(size_t nodeNumber) : Counter(0), Values(nodeNumber) {}
+    SCGSFirstVisitor(size_t nodeNumber, std::vector<size_t>& values) : Counter(0), Values(values) {}
     ~SCGSFirstVisitor(){}
 
     void StartComponent() override {}
     void EndComponent() override {}
     void StartNode(size_t ind) override {
+        if(ind >= Values.size()) {
+            Values.resize(ind+1, 0);
+        }
         Values[ind] = ++Counter;
     }
     void ReturnToNode(size_t ind) override{
+        if(ind >= Values.size()) {
+            Values.resize(ind+1, 0);
+        }
         Values[ind] = ++Counter;
     }
     void EndNode(size_t ind) override {}
 
     const std::vector<size_t> &GetResultValue() const {
         return Values;
-    }
-    std::vector<size_t> && GetResultValues() {
-        return std::move(Values);
-    }
-    
+    }    
 };
 
 
 class SCGSSecondVisitor: public DFSVisitor {
 private:
-    std::set<std::set<size_t>> Components;
+    std::set<std::set<size_t>> &Components;
     std::set<size_t> currentComponet;
 public:
-    SCGSSecondVisitor() : Components(), currentComponet(){}
+    SCGSSecondVisitor(std::set<std::set<size_t>> &components) : Components(components), currentComponet(){}
     ~SCGSSecondVisitor(){}
 
     void StartComponent() override {
@@ -68,26 +70,30 @@ public:
 // But maybe we should copy it explisit, make new object inside func, and return smart pointer.
 // Or maybe SCGSSecondVisitor should keep pointer to needed result (Components), created in func,
 // it will ruin incapsulation, but we dount need a copying
-std::set<std::set<size_t>> SCGSearch(size_t nodesNumber, const std::vector<std::pair<size_t, size_t>>& edges) {
+// TODO: Upd: Change to pass reference to components object, no coping now. Visitors don't conrol result fully 
+// (Its good, because they dount know what we run).
+// Still can be better I think.
+void SCGSearch(size_t nodesNumber, const std::vector<std::pair<size_t, size_t>>& edges, std::set<std::set<size_t>>& result) {
     /// @brief search of strongly connected components.
     /// @param nodesNumber nodes number
     /// @param edges vector of edges as pair of node ind (first->second) /
+    /// @param result for store result components set
+    result.clear();
 
     DirectedGraph graph(nodesNumber, edges);
-    SCGSFirstVisitor firstVisitor(graph.NodesAmount());
+    std::vector<size_t> Values;
+    SCGSFirstVisitor firstVisitor(graph.NodesAmount(), Values);
     graph.DFS(firstVisitor);
 
     std::vector<size_t> order;
     for (size_t i = 0; i < graph.NodesAmount(); i++) {
         order.push_back(i);
     } 
-    std::sort(order.begin(), order.end(), [&firstVisitor](size_t i, size_t j){
-        return firstVisitor.GetResultValue()[i] > firstVisitor.GetResultValue()[j];
+    std::sort(order.begin(), order.end(), [&Values](size_t i, size_t j){
+        return Values[i] > Values[j];
         });
     
-    SCGSSecondVisitor secondVisitor;
+    SCGSSecondVisitor secondVisitor(result);
     auto inversedGraph = graph.GetInverseGraph();
     inversedGraph->DFS(secondVisitor, order);
-    
-    return secondVisitor.GetResulComponents();
 }
